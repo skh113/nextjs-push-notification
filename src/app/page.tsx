@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 export default function Home() {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [permissionGranted, setPermissionGranted] = useState(false);
 
-	// Function to request notification permission
+	// Request notification permission when the user interacts
 	const requestNotificationPermission = async () => {
 		if ("Notification" in window) {
 			const permission = await Notification.requestPermission();
 			if (permission === "granted") {
+				setPermissionGranted(true);
 				console.log("Notification permission granted.");
 			} else {
 				console.log("Notification permission denied.");
@@ -18,9 +20,9 @@ export default function Home() {
 		}
 	};
 
-	// Function to send the notification
+	// Function to send a notification
 	const sendNotification = () => {
-		if (Notification.permission === "granted") {
+		if (permissionGranted && "Notification" in window) {
 			new Notification("Photo is ready!", {
 				body: "The photo has finished loading.",
 				icon: "https://picsum.photos/200", // Optional: Add an icon
@@ -28,22 +30,28 @@ export default function Home() {
 		}
 	};
 
-	useEffect(() => {
-		// Request notification permission when the component is mounted
-		requestNotificationPermission();
-
-		const interval = setInterval(() => {
+	// Start the timer when the user grants permission
+	const startImageLoading = () => {
+		setLoading(true);
+		setTimeout(() => {
 			setImageUrl(`https://picsum.photos/500?random=${Date.now()}`);
-			setLoading(false); // Set loading to false after 10 seconds
-			sendNotification(); // Send a notification after the photo is ready
+			setLoading(false);
+			sendNotification(); // Send notification after image is loaded
 		}, 10000);
-
-		return () => clearInterval(interval); // Cleanup interval on unmount
-	}, []);
+	};
 
 	return (
 		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-			{loading ? (
+			{!permissionGranted ? (
+				<button
+					onClick={() => {
+						requestNotificationPermission();
+						startImageLoading();
+					}}
+					className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">
+					Enable Notifications & Load Image
+				</button>
+			) : loading ? (
 				<p>Loading photo...</p> // Show loading text
 			) : (
 				<img
