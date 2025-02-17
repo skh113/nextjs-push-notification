@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -54,7 +55,7 @@ export default function Home() {
 			) : loading ? (
 				<p>Loading photo...</p> // Show loading text
 			) : (
-				<img
+				<Image
 					src={imageUrl!}
 					alt="Random from Picsum"
 					className="w-[500px] h-auto rounded-lg shadow-lg"
